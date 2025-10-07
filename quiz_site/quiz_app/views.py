@@ -299,3 +299,51 @@ def admin_results(request):
         'quizzes': quizzes,
     }
     return render(request, 'quiz_app/admin/results.html', context)
+
+@user_passes_test(is_staff_user)
+def admin_view_result(request, attempt_id):
+    """Admin view detailed result"""
+    attempt = get_object_or_404(UserQuizAttempt, id=attempt_id)
+    
+    questions_review = []
+    for qid, question_data in attempt.questions_data.items():
+        user_answer = question_data.get('user_answer')
+        correct_answer = question_data.get('correct_option')
+        is_correct = user_answer == correct_answer
+        
+        questions_review.append({
+            'text': question_data.get('text'),
+            'option_a': question_data.get('option_a'),
+            'option_b': question_data.get('option_b'),
+            'option_c': question_data.get('option_c'),
+            'option_d': question_data.get('option_d'),
+            'user_answer': user_answer,
+            'correct_answer': correct_answer,
+            'is_correct': is_correct,
+            'explanation': question_data.get('explanation'),
+        })
+    
+    context = {
+        'attempt': attempt,
+        'questions_review': questions_review,
+        'correct_count': attempt.get_correct_count(),
+        'total_questions': attempt.get_total_questions(),
+    }
+    return render(request, 'quiz_app/admin/view_result.html', context)
+
+@user_passes_test(is_staff_user)
+def admin_delete_user(request, user_id):
+    """Admin delete user"""
+    user = get_object_or_404(User, id=user_id)
+    
+    if user.is_superuser:
+        messages.error(request, 'Cannot delete superuser accounts!')
+        return redirect('admin_users')
+    
+    if request.method == 'POST':
+        username = user.username
+        user.delete()
+        messages.success(request, f'User "{username}" has been deleted successfully!')
+        return redirect('admin_users')
+    
+    return redirect('admin_users')

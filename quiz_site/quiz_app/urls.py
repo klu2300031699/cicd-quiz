@@ -14,8 +14,10 @@ urlpatterns = [
     
     path('admin-panel/', views.admin_dashboard, name='admin_dashboard'),
     path('admin-panel/users/', views.admin_users, name='admin_users'),
+    path('admin-panel/users/<int:user_id>/delete/', views.admin_delete_user, name='admin_delete_user'),
     path('admin-panel/quizzes/', views.admin_quiz_list, name='admin_quiz_list'),
     path('admin-panel/quizzes/create/', views.admin_create_quiz, name='admin_create_quiz'),
     path('admin-panel/quizzes/<int:quiz_id>/edit/', views.admin_edit_quiz, name='admin_edit_quiz'),
     path('admin-panel/results/', views.admin_results, name='admin_results'),
+    path('admin-panel/results/<int:attempt_id>/view/', views.admin_view_result, name='admin_view_result'),
 ]

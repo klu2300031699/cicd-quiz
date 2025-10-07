@@ -1,0 +1,113 @@
+{% extends 'quiz_app/base.html' %}
+
+{% block title %}View Result - Quiz Site{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Quiz Result Details</h2>
+            <a href="{% url 'admin_results' %}" class="btn btn-secondary">Back to Results</a>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">User Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Username:</strong> {{ attempt.user.username }}</p>
+                <p><strong>Email:</strong> {{ attempt.user.email }}</p>
+                <p><strong>Name:</strong> {{ attempt.user.first_name }} {{ attempt.user.last_name }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Quiz Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Quiz Name:</strong> {{ attempt.quiz.name }}</p>
+                <p><strong>Date Attempted:</strong> {{ attempt.date_attempted|date:"F d, Y H:i" }}</p>
+                <p><strong>Score:</strong> 
+                    <span class="badge {% if attempt.score >= 80 %}bg-success{% elif attempt.score >= 60 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                        {{ attempt.score }}%
+                    </span>
+                </p>
+                <p><strong>Correct Answers:</strong> {{ correct_count }} / {{ total_questions }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-info text-white">
+        <h4 class="mb-0">Detailed Answers</h4>
+    </div>
+    <div class="card-body">
+        {% for question in questions_review %}
+            <div class="question-review mb-4 p-3 border rounded {% if question.is_correct %}border-success bg-light{% else %}border-danger{% endif %}">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5><strong>Question {{ forloop.counter }}:</strong></h5>
+                    {% if question.is_correct %}
+                        <span class="badge bg-success">Correct</span>
+                    {% else %}
+                        <span class="badge bg-danger">Wrong</span>
+                    {% endif %}
+                </div>
+                
+                <p class="mb-3"><strong>{{ question.text }}</strong></p>
+                
+                <div class="options mb-3">
+                    <div class="form-check mb-2 p-2 rounded {% if question.user_answer == 'A' %}{% if question.is_correct %}bg-success bg-opacity-10{% else %}bg-danger bg-opacity-10{% endif %}{% endif %}{% if question.correct_answer == 'A' and not question.is_correct %}bg-success bg-opacity-10{% endif %}">
+                        <strong>A.</strong> {{ question.option_a }}
+                        {% if question.user_answer == 'A' %}
+                            <span class="badge bg-primary ms-2">User's Answer</span>
+                        {% endif %}
+                        {% if question.correct_answer == 'A' %}
+                            <span class="badge bg-success ms-2">Correct Answer</span>
+                        {% endif %}
+                    </div>
+                    <div class="form-check mb-2 p-2 rounded {% if question.user_answer == 'B' %}{% if question.is_correct %}bg-success bg-opacity-10{% else %}bg-danger bg-opacity-10{% endif %}{% endif %}{% if question.correct_answer == 'B' and not question.is_correct %}bg-success bg-opacity-10{% endif %}">
+                        <strong>B.</strong> {{ question.option_b }}
+                        {% if question.user_answer == 'B' %}
+                            <span class="badge bg-primary ms-2">User's Answer</span>
+                        {% endif %}
+                        {% if question.correct_answer == 'B' %}
+                            <span class="badge bg-success ms-2">Correct Answer</span>
+                        {% endif %}
+                    </div>
+                    <div class="form-check mb-2 p-2 rounded {% if question.user_answer == 'C' %}{% if question.is_correct %}bg-success bg-opacity-10{% else %}bg-danger bg-opacity-10{% endif %}{% endif %}{% if question.correct_answer == 'C' and not question.is_correct %}bg-success bg-opacity-10{% endif %}">
+                        <strong>C.</strong> {{ question.option_c }}
+                        {% if question.user_answer == 'C' %}
+                            <span class="badge bg-primary ms-2">User's Answer</span>
+                        {% endif %}
+                        {% if question.correct_answer == 'C' %}
+                            <span class="badge bg-success ms-2">Correct Answer</span>
+                        {% endif %}
+                    </div>
+                    <div class="form-check mb-2 p-2 rounded {% if question.user_answer == 'D' %}{% if question.is_correct %}bg-success bg-opacity-10{% else %}bg-danger bg-opacity-10{% endif %}{% endif %}{% if question.correct_answer == 'D' and not question.is_correct %}bg-success bg-opacity-10{% endif %}">
+                        <strong>D.</strong> {{ question.option_d }}
+                        {% if question.user_answer == 'D' %}
+                            <span class="badge bg-primary ms-2">User's Answer</span>
+                        {% endif %}
+                        {% if question.correct_answer == 'D' %}
+                            <span class="badge bg-success ms-2">Correct Answer</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if question.explanation %}
+                    <div class="alert alert-info mb-0">
+                        <strong>Explanation:</strong> {{ question.explanation }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

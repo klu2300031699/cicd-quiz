@@ -176,6 +176,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to generate question forms
     function generateQuestionForms(count) {
+        if (!managementFormTotalForms || !questionFormsContainer) {
+            console.error('Required form elements not found');
+            return;
+        }
+        
         // Save current data before regenerating
         saveQuestionData();
         
@@ -192,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update management form
         managementFormTotalForms.value = count;
-        questionCountDisplay.textContent = count;
+        if (questionCountDisplay) questionCountDisplay.textContent = count;
         
         // Restore saved data
         restoreQuestionData();

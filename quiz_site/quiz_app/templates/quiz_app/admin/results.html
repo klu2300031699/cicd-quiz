@@ -53,6 +53,7 @@
                             <th>Score</th>
                             <th>Correct Answers</th>
                             <th>Date</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -67,6 +68,9 @@
                                 </td>
                                 <td>{{ attempt.get_correct_count }} / {{ attempt.get_total_questions }}</td>
                                 <td>{{ attempt.date_attempted|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'admin_view_result' attempt.id %}" class="btn btn-info btn-sm">View Details</a>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>

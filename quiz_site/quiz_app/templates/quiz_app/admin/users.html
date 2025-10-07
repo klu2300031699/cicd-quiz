@@ -24,6 +24,7 @@
                         <th>Registration Date</th>
                         <th>Total Attempts</th>
                         <th>Avg Score</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,6 +42,16 @@
                                     </span>
                                 {% else %}
                                     <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not stat.user.is_superuser %}
+                                    <form method="post" action="{% url 'admin_delete_user' stat.user.id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete user {{ stat.user.username }}? This action cannot be undone!');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
+                                {% else %}
+                                    <span class="badge bg-secondary">Superuser</span>
                                 {% endif %}
                             </td>
                         </tr>

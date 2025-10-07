@@ -10,6 +10,15 @@
         right: 20px;
         z-index: 1000;
     }
+    .question-card {
+        display: none;
+    }
+    .question-card.active {
+        display: block;
+    }
+    .progress-indicator {
+        margin-bottom: 20px;
+    }
 </style>
 {% endblock %}
 
@@ -30,47 +39,69 @@
             <div class="card-body p-4">
                 <p class="lead mb-4">{{ quiz.description }}</p>
                 
+                <div class="progress-indicator">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Question <span id="current-question">1</span> of <span id="total-questions">{{ questions|length }}</span></span>
+                        <span class="badge bg-info">Progress: <span id="progress-percentage">0%</span></span>
+                    </div>
+                    <div class="progress">
+                        <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
                 <form method="post" id="quiz-form">
                     {% csrf_token %}
                     <input type="hidden" name="question_ids" value="{{ question_ids }}">
+                    
                     {% for question in questions %}
-                        <div class="question-card mb-4 p-4 border rounded">
-                            <h5 class="mb-3"><strong>Question {{ forloop.counter }}:</strong> {{ question.text }}</h5>
-                            <div class="options">
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="question_{{ question.id }}" 
-                                           id="q{{ question.id }}_a" value="A" required>
-                                    <label class="form-check-label" for="q{{ question.id }}_a">
-                                        <strong>A.</strong> {{ question.option_a }}
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="question_{{ question.id }}" 
-                                           id="q{{ question.id }}_b" value="B">
-                                    <label class="form-check-label" for="q{{ question.id }}_b">
-                                        <strong>B.</strong> {{ question.option_b }}
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="question_{{ question.id }}" 
-                                           id="q{{ question.id }}_c" value="C">
-                                    <label class="form-check-label" for="q{{ question.id }}_c">
-                                        <strong>C.</strong> {{ question.option_c }}
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="question_{{ question.id }}" 
-                                           id="q{{ question.id }}_d" value="D">
-                                    <label class="form-check-label" for="q{{ question.id }}_d">
-                                        <strong>D.</strong> {{ question.option_d }}
-                                    </label>
+                        <div class="question-card {% if forloop.first %}active{% endif %}" data-question-index="{{ forloop.counter0 }}">
+                            <div class="p-4 border rounded bg-light">
+                                <h5 class="mb-3"><strong>Question {{ forloop.counter }}:</strong></h5>
+                                <p class="fs-5 mb-4">{{ question.text }}</p>
+                                <div class="options">
+                                    <div class="form-check mb-3 p-3 border rounded bg-white">
+                                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" 
+                                               id="q{{ question.id }}_a" value="A">
+                                        <label class="form-check-label w-100" for="q{{ question.id }}_a">
+                                            <strong>A.</strong> {{ question.option_a }}
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3 p-3 border rounded bg-white">
+                                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" 
+                                               id="q{{ question.id }}_b" value="B">
+                                        <label class="form-check-label w-100" for="q{{ question.id }}_b">
+                                            <strong>B.</strong> {{ question.option_b }}
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3 p-3 border rounded bg-white">
+                                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" 
+                                               id="q{{ question.id }}_c" value="C">
+                                        <label class="form-check-label w-100" for="q{{ question.id }}_c">
+                                            <strong>C.</strong> {{ question.option_c }}
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3 p-3 border rounded bg-white">
+                                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" 
+                                               id="q{{ question.id }}_d" value="D">
+                                        <label class="form-check-label w-100" for="q{{ question.id }}_d">
+                                            <strong>D.</strong> {{ question.option_d }}
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                     
-                    <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-success btn-lg px-5">Submit Quiz</button>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" id="prev-btn" class="btn btn-secondary btn-lg" style="display: none;">
+                            <i class="bi bi-arrow-left"></i> Previous
+                        </button>
+                        <button type="button" id="next-btn" class="btn btn-primary btn-lg">
+                            Next <i class="bi bi-arrow-right"></i>
+                        </button>
+                        <button type="submit" id="submit-btn" class="btn btn-success btn-lg px-5" style="display: none;">
+                            Submit Quiz
+                        </button>
                     </div>
                 </form>
             </div>
@@ -80,11 +111,88 @@
 {% endblock %}
 
 {% block extra_js %}
-{% if quiz.time_limit > 0 %}
 <script>
+    let currentQuestionIndex = 0;
+    const totalQuestions = {{ questions|length }};
+    const questionCards = document.querySelectorAll('.question-card');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const quizForm = document.getElementById('quiz-form');
+    const currentQuestionDisplay = document.getElementById('current-question');
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercentage = document.getElementById('progress-percentage');
+    
+    function updateQuestion() {
+        questionCards.forEach((card, index) => {
+            card.classList.remove('active');
+            if (index === currentQuestionIndex) {
+                card.classList.add('active');
+            }
+        });
+        
+        currentQuestionDisplay.textContent = currentQuestionIndex + 1;
+        
+        const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
+        progressBar.style.width = progress + '%';
+        progressPercentage.textContent = Math.round(progress) + '%';
+        
+        prevBtn.style.display = currentQuestionIndex === 0 ? 'none' : 'block';
+        
+        if (currentQuestionIndex === totalQuestions - 1) {
+            nextBtn.style.display = 'none';
+            submitBtn.style.display = 'block';
+        } else {
+            nextBtn.style.display = 'block';
+            submitBtn.style.display = 'none';
+        }
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    prevBtn.addEventListener('click', function() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            updateQuestion();
+        }
+    });
+    
+    nextBtn.addEventListener('click', function() {
+        if (currentQuestionIndex < totalQuestions - 1) {
+            currentQuestionIndex++;
+            updateQuestion();
+        }
+    });
+    
+    quizForm.addEventListener('submit', function(e) {
+        const radios = quizForm.querySelectorAll('input[type="radio"]');
+        const questions = new Set();
+        radios.forEach(radio => questions.add(radio.name));
+        
+        let allAnswered = true;
+        let unansweredQuestions = [];
+        questions.forEach(question => {
+            const answered = quizForm.querySelector(`input[name="${question}"]:checked`);
+            if (!answered) {
+                allAnswered = false;
+                const questionNum = question.replace('question_', '');
+                unansweredQuestions.push(questionNum);
+            }
+        });
+        
+        if (!allAnswered) {
+            e.preventDefault();
+            alert('Please answer all questions before submitting!\n\nYou can use the Previous button to go back and answer any missed questions.');
+        } else {
+            if (!confirm('Are you sure you want to submit your quiz? You cannot change your answers after submission.')) {
+                e.preventDefault();
+            }
+        }
+    });
+    
+    {% if quiz.time_limit > 0 %}
     let timeRemaining = {{ quiz.time_limit }} * 60;
     const timerDisplay = document.getElementById('time-display');
-    const quizForm = document.getElementById('quiz-form');
     
     function updateTimer() {
         const minutes = Math.floor(timeRemaining / 60);
@@ -101,25 +209,8 @@
     }
     
     updateTimer();
+    {% endif %}
     
-    quizForm.addEventListener('submit', function(e) {
-        const radios = quizForm.querySelectorAll('input[type="radio"]');
-        const questions = new Set();
-        radios.forEach(radio => questions.add(radio.name));
-        
-        let allAnswered = true;
-        questions.forEach(question => {
-            const answered = quizForm.querySelector(`input[name="${question}"]:checked`);
-            if (!answered) {
-                allAnswered = false;
-            }
-        });
-        
-        if (!allAnswered) {
-            e.preventDefault();
-            alert('Please answer all questions before submitting!');
-        }
-    });
+    updateQuestion();
 </script>
-{% endif %}
 {% endblock %}
