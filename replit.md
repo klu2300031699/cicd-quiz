@@ -155,14 +155,51 @@ Two pre-loaded quizzes:
 
 ## Recent Changes (October 7, 2025)
 
+### Major Feature Enhancements
+
+#### One-Question-at-a-Time Quiz Flow
+- **Complete redesign of quiz taking interface**: Questions now display one at a time instead of all at once
+- **Navigation buttons**: Previous, Next, and Submit buttons for intuitive quiz navigation
+- **Progress tracking**: Visual progress bar showing current question number (e.g., "Question 2 of 5")
+- **Answer preservation**: All answers are saved when navigating between questions
+- **Timer integration**: Countdown timer remains functional and auto-submits when time expires
+- **Implementation**: JavaScript-based navigation without page reloads for smooth user experience
+
+#### Admin User Management
+- **Delete user functionality**: Admins can remove users from the system
+- **Superuser protection**: Prevents accidental deletion of superuser accounts
+- **Confirmation dialog**: JavaScript alert confirms deletion before proceeding
+- **CSRF-protected**: Delete action uses POST request with CSRF token for security
+
+#### Admin Results Viewing
+- **Detailed results view**: New "View Details" button in admin results table
+- **Question-by-question review**: Shows each question with user's answer and correct answer
+- **Color-coded answers**: Green highlights for correct answers, red for incorrect
+- **Visual indicators**: Badges show "User's Answer" and "Correct Answer" for clarity
+- **Complete information**: Displays user info, quiz info, score, and all answer explanations
+
+#### Profile Editing
+- **User profile management**: Users can edit their first name, last name, and email
+- **Form validation**: Django forms ensure data integrity
+- **Navigation integration**: "Edit Profile" link in navbar when logged in
+
+#### Dynamic Quiz Creation
+- **Smart question form generation**: Question fields auto-generate based on "Total Questions Available" input
+- **Data preservation**: Entered question data is preserved when changing the question count
+- **Formset management**: JavaScript handles Django formsets dynamically
+- **Bug fix**: Added null checks to prevent JavaScript errors on page load
+
 ### Bug Fixes
-- **Fixed random quiz scoring issue**: Modified `take_quiz` view to persist question IDs in hidden form field, ensuring the same questions are graded on submission regardless of quiz type.
+- **Fixed random quiz scoring issue**: Modified `take_quiz` view to persist question IDs in hidden form field, ensuring the same questions are graded on submission regardless of quiz type
+- **Fixed JavaScript error**: Added null checks in create_quiz.html to handle missing management form elements gracefully
+- **Fixed CSRF authentication**: Added Replit domains to CSRF_TRUSTED_ORIGINS for proper login/registration functionality
 
 ### Implementation Details
-- Added `question_ids` context variable in GET request containing comma-separated question IDs
-- Modified POST handler to retrieve questions by ID instead of re-randomizing
-- Added hidden input field in `take_quiz.html` template to store question IDs
-- Maintained backward compatibility with fixed quizzes
+- **Quiz Navigation**: Uses CSS to show/hide questions, all questions remain in DOM for form submission
+- **Delete User**: POST request to `/admin-panel/users/<id>/delete/` with staff permissions required
+- **View Results**: GET request to `/admin-panel/results/<id>/view/` with comprehensive question analysis
+- **Profile Edit**: Standard Django form handling with validation and error messages
+- **Dynamic Forms**: JavaScript monitors "Total Questions Available" input and regenerates formsets accordingly
 
 ## How to Use
 
