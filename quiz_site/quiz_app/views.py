@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.db import transaction
 from django.db import models
 from .models import Quiz, Question, UserQuizAttempt, UserProfile
-from .forms import UserRegistrationForm, QuizForm, QuestionFormSet
+from .forms import UserRegistrationForm, UserProfileForm, QuizForm, QuestionFormSet, get_question_formset
 import json
 
 def home(request):
@@ -58,6 +58,27 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
     return redirect('home')
+
+@login_required
+def edit_profile(request):
+    """User profile edit view"""
+    # Ensure UserProfile exists for the current user
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully!')
+            return redirect('edit_profile')
+    else:
+        form = UserProfileForm(instance=request.user)
+    
+    context = {
+        'form': form,
+        'profile': profile
+    }
+    return render(request, 'quiz_app/edit_profile.html', context)
 
 @login_required
 def quiz_list(request):

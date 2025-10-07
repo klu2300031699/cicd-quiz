@@ -40,6 +40,7 @@
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Total Questions Available *</label>
                     {{ form.total_questions }}
+                    <small class="form-text text-muted">This determines how many question forms will be created</small>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Quiz Type *</label>
@@ -60,54 +61,12 @@
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-success text-white">
             <h4 class="mb-0">Questions</h4>
+            <small class="text-white-50">Number of question forms shown: <span id="question-count">0</span></small>
         </div>
         <div class="card-body">
             {{ formset.management_form }}
             <div id="question-forms">
-                {% for question_form in formset %}
-                    <div class="question-form-item border p-3 mb-3 rounded">
-                        <h5>Question {{ forloop.counter }}</h5>
-                        {{ question_form.id }}
-                        <div class="mb-3">
-                            <label class="form-label">Question Text *</label>
-                            {{ question_form.text }}
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Option A *</label>
-                                {{ question_form.option_a }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Option B *</label>
-                                {{ question_form.option_b }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Option C *</label>
-                                {{ question_form.option_c }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Option D *</label>
-                                {{ question_form.option_d }}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Correct Answer *</label>
-                                {{ question_form.correct_option }}
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Explanation (Optional)</label>
-                            {{ question_form.explanation }}
-                        </div>
-                        {% if question_form.DELETE %}
-                            <div class="form-check">
-                                {{ question_form.DELETE }}
-                                <label class="form-check-label text-danger">Delete this question</label>
-                            </div>
-                        {% endif %}
-                    </div>
-                {% endfor %}
+                <!-- Question forms will be dynamically generated here -->
             </div>
         </div>
     </div>
@@ -117,4 +76,157 @@
         <a href="{% url 'admin_quiz_list' %}" class="btn btn-secondary btn-lg px-5">Cancel</a>
     </div>
 </form>
+
+<!-- Hidden template for question form -->
+<div id="question-template" style="display: none;">
+    <div class="question-form-item border p-3 mb-3 rounded" data-question-index="__INDEX__">
+        <h5>Question <span class="question-number">__NUMBER__</span></h5>
+        <input type="hidden" name="question_set-__INDEX__-id" id="id_question_set-__INDEX__-id">
+        
+        <div class="mb-3">
+            <label class="form-label">Question Text *</label>
+            <textarea name="question_set-__INDEX__-text" rows="2" class="form-control" placeholder="Question Text" id="id_question_set-__INDEX__-text"></textarea>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Option A *</label>
+                <input type="text" name="question_set-__INDEX__-option_a" class="form-control" placeholder="Option A" id="id_question_set-__INDEX__-option_a">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Option B *</label>
+                <input type="text" name="question_set-__INDEX__-option_b" class="form-control" placeholder="Option B" id="id_question_set-__INDEX__-option_b">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Option C *</label>
+                <input type="text" name="question_set-__INDEX__-option_c" class="form-control" placeholder="Option C" id="id_question_set-__INDEX__-option_c">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Option D *</label>
+                <input type="text" name="question_set-__INDEX__-option_d" class="form-control" placeholder="Option D" id="id_question_set-__INDEX__-option_d">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Correct Answer *</label>
+                <select name="question_set-__INDEX__-correct_option" class="form-select" id="id_question_set-__INDEX__-correct_option">
+                    <option value="">---------</option>
+                    <option value="A">Option A</option>
+                    <option value="B">Option B</option>
+                    <option value="C">Option C</option>
+                    <option value="D">Option D</option>
+                </select>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Explanation (Optional)</label>
+            <textarea name="question_set-__INDEX__-explanation" rows="2" class="form-control" placeholder="Explanation (optional)" id="id_question_set-__INDEX__-explanation"></textarea>
+        </div>
+        <input type="hidden" name="question_set-__INDEX__-DELETE" id="id_question_set-__INDEX__-DELETE">
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const totalQuestionsInput = document.getElementById('id_total_questions');
+    const questionFormsContainer = document.getElementById('question-forms');
+    const questionTemplate = document.getElementById('question-template').innerHTML;
+    const managementFormTotalForms = document.getElementById('id_question_set-TOTAL_FORMS');
+    const questionCountDisplay = document.getElementById('question-count');
+    
+    // Store question data to preserve when changing count
+    let questionDataStore = [];
+    
+    // Function to save current form data
+    function saveQuestionData() {
+        const questionForms = document.querySelectorAll('.question-form-item');
+        questionDataStore = [];
+        
+        questionForms.forEach((formDiv, index) => {
+            const formIndex = formDiv.getAttribute('data-question-index');
+            const data = {
+                text: document.getElementById(`id_question_set-${formIndex}-text`)?.value || '',
+                option_a: document.getElementById(`id_question_set-${formIndex}-option_a`)?.value || '',
+                option_b: document.getElementById(`id_question_set-${formIndex}-option_b`)?.value || '',
+                option_c: document.getElementById(`id_question_set-${formIndex}-option_c`)?.value || '',
+                option_d: document.getElementById(`id_question_set-${formIndex}-option_d`)?.value || '',
+                correct_option: document.getElementById(`id_question_set-${formIndex}-correct_option`)?.value || '',
+                explanation: document.getElementById(`id_question_set-${formIndex}-explanation`)?.value || ''
+            };
+            questionDataStore.push(data);
+        });
+    }
+    
+    // Function to restore saved data
+    function restoreQuestionData() {
+        questionDataStore.forEach((data, index) => {
+            if (index < document.querySelectorAll('.question-form-item').length) {
+                document.getElementById(`id_question_set-${index}-text`).value = data.text;
+                document.getElementById(`id_question_set-${index}-option_a`).value = data.option_a;
+                document.getElementById(`id_question_set-${index}-option_b`).value = data.option_b;
+                document.getElementById(`id_question_set-${index}-option_c`).value = data.option_c;
+                document.getElementById(`id_question_set-${index}-option_d`).value = data.option_d;
+                document.getElementById(`id_question_set-${index}-correct_option`).value = data.correct_option;
+                document.getElementById(`id_question_set-${index}-explanation`).value = data.explanation;
+            }
+        });
+    }
+    
+    // Function to generate question forms
+    function generateQuestionForms(count) {
+        // Save current data before regenerating
+        saveQuestionData();
+        
+        // Clear existing forms
+        questionFormsContainer.innerHTML = '';
+        
+        // Generate new forms
+        for (let i = 0; i < count; i++) {
+            const newForm = questionTemplate
+                .replace(/__INDEX__/g, i)
+                .replace(/__NUMBER__/g, i + 1);
+            questionFormsContainer.insertAdjacentHTML('beforeend', newForm);
+        }
+        
+        // Update management form
+        managementFormTotalForms.value = count;
+        questionCountDisplay.textContent = count;
+        
+        // Restore saved data
+        restoreQuestionData();
+    }
+    
+    // Listen for changes to total questions field
+    totalQuestionsInput.addEventListener('input', function() {
+        const count = parseInt(this.value) || 0;
+        if (count > 0 && count <= 100) {
+            generateQuestionForms(count);
+        }
+    });
+    
+    // Initialize with default value or 5 questions
+    const initialCount = parseInt(totalQuestionsInput.value) || 5;
+    generateQuestionForms(initialCount);
+    
+    // Form validation before submit
+    document.getElementById('quiz-form').addEventListener('submit', function(e) {
+        const totalQuestions = parseInt(totalQuestionsInput.value) || 0;
+        const numQuestions = parseInt(document.getElementById('id_num_questions').value) || 0;
+        
+        if (numQuestions > totalQuestions) {
+            e.preventDefault();
+            alert('Questions to Show cannot be greater than Total Questions Available!');
+            return false;
+        }
+        
+        if (totalQuestions === 0) {
+            e.preventDefault();
+            alert('Please enter Total Questions Available!');
+            return false;
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -3,6 +3,33 @@ from django.contrib.auth.models import User
 from django.forms import inlineformset_factory
 from .models import Quiz, Question
 
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        self.user_instance = kwargs.get('instance')
+        super().__init__(*args, **kwargs)
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exclude(pk=self.user_instance.pk).exists():
+            raise forms.ValidationError("This email is already registered.")
+        return email
+    
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exclude(pk=self.user_instance.pk).exists():
+            raise forms.ValidationError("This username is already taken.")
+        return username
+
 class UserRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(attrs={
         'class': 'form-control',
@@ -67,10 +94,14 @@ class QuestionForm(forms.ModelForm):
             'explanation': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Explanation (optional)'}),
         }
 
-QuestionFormSet = inlineformset_factory(
-    Quiz,
-    Question,
-    form=QuestionForm,
-    extra=5,
-    can_delete=True
-)
+def get_question_formset(extra_forms=5):
+    """Generate a question formset with dynamic number of extra forms"""
+    return inlineformset_factory(
+        Quiz,
+        Question,
+        form=QuestionForm,
+        extra=extra_forms,
+        can_delete=True
+    )
+
+QuestionFormSet = get_question_formset(5)
