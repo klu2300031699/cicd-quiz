@@ -1,0 +1,120 @@
+{% extends 'quiz_app/base.html' %}
+
+{% block title %}Create Quiz - Quiz Site{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Create New Quiz</h2>
+            <a href="{% url 'admin_quiz_list' %}" class="btn btn-secondary">Back to Quiz List</a>
+        </div>
+    </div>
+</div>
+
+<form method="post" id="quiz-form">
+    {% csrf_token %}
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Quiz Details</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Quiz Name *</label>
+                    {{ form.name }}
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Description *</label>
+                    {{ form.description }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Time Limit (minutes) *</label>
+                    {{ form.time_limit }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Questions to Show *</label>
+                    {{ form.num_questions }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Total Questions Available *</label>
+                    {{ form.total_questions }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Quiz Type *</label>
+                    {{ form.quiz_type }}
+                    <small class="form-text text-muted">Random: Questions are randomly selected each time</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Active</label>
+                    <div class="form-check">
+                        {{ form.is_active }}
+                        <label class="form-check-label">Make this quiz active and visible to users</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">Questions</h4>
+        </div>
+        <div class="card-body">
+            {{ formset.management_form }}
+            <div id="question-forms">
+                {% for question_form in formset %}
+                    <div class="question-form-item border p-3 mb-3 rounded">
+                        <h5>Question {{ forloop.counter }}</h5>
+                        {{ question_form.id }}
+                        <div class="mb-3">
+                            <label class="form-label">Question Text *</label>
+                            {{ question_form.text }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Option A *</label>
+                                {{ question_form.option_a }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Option B *</label>
+                                {{ question_form.option_b }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Option C *</label>
+                                {{ question_form.option_c }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Option D *</label>
+                                {{ question_form.option_d }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Correct Answer *</label>
+                                {{ question_form.correct_option }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Explanation (Optional)</label>
+                            {{ question_form.explanation }}
+                        </div>
+                        {% if question_form.DELETE %}
+                            <div class="form-check">
+                                {{ question_form.DELETE }}
+                                <label class="form-check-label text-danger">Delete this question</label>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mb-4">
+        <button type="submit" class="btn btn-success btn-lg px-5">Create Quiz</button>
+        <a href="{% url 'admin_quiz_list' %}" class="btn btn-secondary btn-lg px-5">Cancel</a>
+    </div>
+</form>
+{% endblock %}

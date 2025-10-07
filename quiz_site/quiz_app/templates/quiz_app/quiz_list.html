@@ -1,0 +1,38 @@
+{% extends 'quiz_app/base.html' %}
+
+{% block title %}Quizzes - Quiz Site{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">Available Quizzes</h2>
+    </div>
+</div>
+
+{% if quizzes %}
+    <div class="row g-4">
+        {% for quiz in quizzes %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm hover-card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ quiz.name }}</h5>
+                        <p class="card-text text-muted">{{ quiz.description|truncatewords:20 }}</p>
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> {{ quiz.time_limit }} minutes |
+                                <i class="bi bi-question-circle"></i> {{ quiz.num_questions }} questions
+                            </small>
+                        </div>
+                        <a href="{% url 'take_quiz' quiz.id %}" class="btn btn-primary w-100">Start Quiz</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <h4>No Quizzes Available</h4>
+        <p class="mb-0">There are currently no active quizzes. Please check back later!</p>
+    </div>
+{% endif %}
+{% endblock %}

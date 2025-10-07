@@ -1,0 +1,82 @@
+{% extends 'quiz_app/base.html' %}
+
+{% block title %}All Results - Quiz Site{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>All Quiz Results</h2>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label">Filter by User</label>
+                <select name="user" class="form-select">
+                    <option value="">All Users</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Filter by Quiz</label>
+                <select name="quiz" class="form-select">
+                    <option value="">All Quizzes</option>
+                    {% for quiz in quizzes %}
+                        <option value="{{ quiz.id }}">{{ quiz.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if attempts %}
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>User</th>
+                            <th>Quiz</th>
+                            <th>Score</th>
+                            <th>Correct Answers</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attempt in attempts %}
+                            <tr>
+                                <td>{{ attempt.user.username }}</td>
+                                <td>{{ attempt.quiz.name }}</td>
+                                <td>
+                                    <span class="badge {% if attempt.score >= 80 %}bg-success{% elif attempt.score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ attempt.score }}%
+                                    </span>
+                                </td>
+                                <td>{{ attempt.get_correct_count }} / {{ attempt.get_total_questions }}</td>
+                                <td>{{ attempt.date_attempted|date:"M d, Y H:i" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <p class="mb-0">No quiz attempts found.</p>
+    </div>
+{% endif %}
+{% endblock %}

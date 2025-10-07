@@ -1,0 +1,54 @@
+{% extends 'quiz_app/base.html' %}
+
+{% block title %}My Results - Quiz Site{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">My Quiz History</h2>
+    </div>
+</div>
+
+{% if attempts %}
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Quiz Name</th>
+                            <th>Date Attempted</th>
+                            <th>Score</th>
+                            <th>Correct Answers</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attempt in attempts %}
+                            <tr>
+                                <td>{{ attempt.quiz.name }}</td>
+                                <td>{{ attempt.date_attempted|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <span class="badge {% if attempt.score >= 80 %}bg-success{% elif attempt.score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ attempt.score }}%
+                                    </span>
+                                </td>
+                                <td>{{ attempt.get_correct_count }} / {{ attempt.get_total_questions }}</td>
+                                <td>
+                                    <a href="{% url 'quiz_result' attempt.id %}" class="btn btn-sm btn-primary">View Details</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <h4>No Quiz History</h4>
+        <p class="mb-3">You haven't attempted any quizzes yet.</p>
+        <a href="{% url 'quiz_list' %}" class="btn btn-primary">Start Your First Quiz</a>
+    </div>
+{% endif %}
+{% endblock %}

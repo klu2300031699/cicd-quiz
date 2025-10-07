@@ -1,0 +1,53 @@
+{% extends 'quiz_app/base.html' %}
+
+{% block title %}Home - Quiz Site{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="text-center py-5">
+            <h1 class="display-4 mb-4">Welcome to QuizMaster</h1>
+            {% if user.is_authenticated %}
+                <p class="lead mb-4">Hello, <strong>{{ user.username }}</strong>! Ready to test your knowledge?</p>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-5">
+                        <h3 class="card-title mb-3">Start Your Quiz Journey</h3>
+                        <p class="card-text text-muted mb-4">Challenge yourself with our curated quizzes and track your progress over time.</p>
+                        <a href="{% url 'quiz_list' %}" class="btn btn-primary btn-lg px-5">Start Quiz</a>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body">
+                                <h5 class="card-title">Browse Quizzes</h5>
+                                <p class="card-text">Explore available quizzes and pick your favorite topics.</p>
+                                <a href="{% url 'quiz_list' %}" class="btn btn-outline-primary">View Quizzes</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-success">
+                            <div class="card-body">
+                                <h5 class="card-title">View Results</h5>
+                                <p class="card-text">Check your quiz history and track your performance.</p>
+                                <a href="{% url 'results_history' %}" class="btn btn-outline-success">My Results</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p class="lead mb-4">Test your knowledge with our interactive quizzes!</p>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-5">
+                        <h3 class="card-title mb-3">Get Started</h3>
+                        <p class="card-text text-muted mb-4">Please log in or register to access our quizzes and track your progress.</p>
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-5 me-2">Login</a>
+                        <a href="{% url 'register' %}" class="btn btn-outline-primary btn-lg px-5">Register</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

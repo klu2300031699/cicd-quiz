@@ -1,0 +1,101 @@
+{% extends 'quiz_app/base.html' %}
+
+{% block title %}Quiz Result - Quiz Site{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0">Quiz Results: {{ attempt.quiz.name }}</h3>
+            </div>
+            <div class="card-body p-4">
+                <div class="row text-center mb-4">
+                    <div class="col-md-4">
+                        <h4>Your Score</h4>
+                        <div class="display-4 text-primary">{{ attempt.score }}%</div>
+                    </div>
+                    <div class="col-md-4">
+                        <h4>Correct Answers</h4>
+                        <div class="display-4 text-success">{{ correct_count }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <h4>Total Questions</h4>
+                        <div class="display-4 text-info">{{ total_questions }}</div>
+                    </div>
+                </div>
+                
+                <div class="progress mb-4" style="height: 30px;">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: {{ attempt.score }}%;" 
+                         aria-valuenow="{{ attempt.score }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                        {{ attempt.score }}%
+                    </div>
+                </div>
+                
+                <h4 class="mb-3">Answer Review</h4>
+                {% for question in questions_review %}
+                    <div class="card mb-3 {% if question.is_correct %}border-success{% else %}border-danger{% endif %}">
+                        <div class="card-header {% if question.is_correct %}bg-success bg-opacity-10{% else %}bg-danger bg-opacity-10{% endif %}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong>Question {{ forloop.counter }}</strong>
+                                {% if question.is_correct %}
+                                    <span class="badge bg-success">Correct ✓</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Incorrect ✗</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="fw-bold">{{ question.text }}</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Options:</h6>
+                                    <ul class="list-unstyled">
+                                        <li class="{% if question.user_answer == 'A' %}text-primary fw-bold{% endif %} {% if question.correct_answer == 'A' %}text-success{% endif %}">
+                                            A. {{ question.option_a }} 
+                                            {% if question.correct_answer == 'A' %}<span class="badge bg-success">Correct</span>{% endif %}
+                                            {% if question.user_answer == 'A' %}<span class="badge bg-primary">Your Answer</span>{% endif %}
+                                        </li>
+                                        <li class="{% if question.user_answer == 'B' %}text-primary fw-bold{% endif %} {% if question.correct_answer == 'B' %}text-success{% endif %}">
+                                            B. {{ question.option_b }}
+                                            {% if question.correct_answer == 'B' %}<span class="badge bg-success">Correct</span>{% endif %}
+                                            {% if question.user_answer == 'B' %}<span class="badge bg-primary">Your Answer</span>{% endif %}
+                                        </li>
+                                        <li class="{% if question.user_answer == 'C' %}text-primary fw-bold{% endif %} {% if question.correct_answer == 'C' %}text-success{% endif %}">
+                                            C. {{ question.option_c }}
+                                            {% if question.correct_answer == 'C' %}<span class="badge bg-success">Correct</span>{% endif %}
+                                            {% if question.user_answer == 'C' %}<span class="badge bg-primary">Your Answer</span>{% endif %}
+                                        </li>
+                                        <li class="{% if question.user_answer == 'D' %}text-primary fw-bold{% endif %} {% if question.correct_answer == 'D' %}text-success{% endif %}">
+                                            D. {{ question.option_d }}
+                                            {% if question.correct_answer == 'D' %}<span class="badge bg-success">Correct</span>{% endif %}
+                                            {% if question.user_answer == 'D' %}<span class="badge bg-primary">Your Answer</span>{% endif %}
+                                        </li>
+                                    </ul>
+                                </div>
+                                {% if question.explanation %}
+                                    <div class="col-md-6">
+                                        <div class="alert alert-info mb-0">
+                                            <h6>Explanation:</h6>
+                                            <p class="mb-0">{{ question.explanation }}</p>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                
+                <div class="text-center mt-4">
+                    <a href="{% url 'quiz_list' %}" class="btn btn-primary me-2">Take Another Quiz</a>
+                    <a href="{% url 'results_history' %}" class="btn btn-outline-secondary">View All Results</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
