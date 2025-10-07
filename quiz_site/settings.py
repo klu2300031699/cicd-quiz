@@ -21,12 +21,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-^cc*w=f0=po(s9z9411n)z2q15v7e++fcyqt$wd9hfsz&1z1ll')
+SECRET_KEY = os.environ.get('SESSION_SECRET')
+if not SECRET_KEY:
+    raise ValueError("SESSION_SECRET environment variable must be set for SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['.repl.co', '.replit.dev', 'localhost', '127.0.0.1']
 
 # CSRF trusted origins for Replit
 CSRF_TRUSTED_ORIGINS = [
