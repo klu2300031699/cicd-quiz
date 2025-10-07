@@ -153,7 +153,45 @@ Two pre-loaded quizzes:
 1. **Git and Docker Basics** - 5 questions, fixed order, 15-minute timer
 2. **Python Programming Fundamentals** - 7 questions (shows random 5), 20-minute timer
 
+## Deployment Configuration
+
+### Production Setup
+The application is now configured for production deployment on Replit:
+
+1. **Production Server**: Gunicorn WSGI server with 2 workers
+2. **Static Files**: WhiteNoise middleware for efficient static file serving with compression
+3. **Security Configuration**:
+   - SECRET_KEY sourced from SESSION_SECRET environment variable
+   - ALLOWED_HOSTS restricted to Replit domains (.repl.co, .replit.dev) and localhost
+   - DEBUG defaults to False (set DEBUG=True environment variable only for development)
+   - CSRF protection configured for Replit domains
+
+### Deployment Settings
+- **Deployment Type**: Autoscale (serverless deployment)
+- **Run Command**: `gunicorn --bind=0.0.0.0:5000 --workers=2 quiz_site.wsgi:application`
+- **Required Environment Variables**:
+  - `SESSION_SECRET`: Used as Django SECRET_KEY (already available in Replit)
+  - `DEBUG`: Optional, set to 'True' for development mode (defaults to False)
+
+### Publishing the Application
+To make your quiz website publicly accessible:
+1. Click the "Deploy" button in the Replit interface
+2. The application will be deployed using the autoscale configuration
+3. You'll receive a public URL where users can access your quiz application
+
+### Important Notes
+- The SQLite database is included and will persist with your deployment
+- Static files are pre-collected and will be served efficiently by WhiteNoise
+- All existing user data and quizzes are preserved in db.sqlite3
+
 ## Recent Changes (October 7, 2025)
+
+### Deployment Configuration Added
+- **Production dependencies installed**: Gunicorn (WSGI server) and WhiteNoise (static file serving)
+- **Security hardening**: SECRET_KEY now uses SESSION_SECRET environment variable with no insecure fallback
+- **Host restrictions**: ALLOWED_HOSTS limited to Replit domains for security
+- **Static file optimization**: WhiteNoise configured with compression and manifest storage
+- **Deployment ready**: Autoscale deployment configuration set up for Replit publishing
 
 ### Major Feature Enhancements
 
